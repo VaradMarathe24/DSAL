@@ -1,73 +1,91 @@
 #include <iostream>
-#include <vector>
+#include <stack>
 #include <list>
-#include <utility>
+#include <vector>
+#include <string>
 using namespace std;
-class Graph {
-public:
-    int V; // Number of vertices (cities)
-    list<pair<int, int> > *adj; // Array of adjacency lists, where pair<int, int> is (destination, weight)
-
-    Graph(int V) {
-        this->V = V;
-        adj = new list<pair<int, int> >[V];
-    }
-    ~Graph() {
-        delete[] adj;
-    }
-    void addEdge(int u, int v, int weight) {
-        adj[u].push_back(make_pair(v, weight)); // Add edge from u to v with weight
-        adj[v].push_back(make_pair(u, weight)); // For undirected graph, also add edge from v to u
-    }
-    void DFSUtil(int v, bool visited[]) {
-        visited[v] = true;
-        for (auto& neighbor : adj[v]) {
-            int u = neighbor.first;
-            if (!visited[u]) {
-                DFSUtil(u, visited);
-            }
-        }
-    }
-    bool isConnected() {
-        // Mark all vertices as not visited
-        bool visited[V] = {false};
-        
-        // Start DFS from the first non-isolated vertex
-        int startVertex = -1;
-        for (int i = 0; i < V; i++) {
-            if (!adj[i].empty()) {
-                startVertex = i;
-                break;
-            }
-        }
-        
-        if (startVertex == -1) {
-            // All vertices are isolated
-            return true;
-        }
-        DFSUtil(startVertex, visited);
-        for (int i = 0; i < V; i++) {
-            if (!visited[i] && !adj[i].empty()) {
-                return false; // A vertex was not visited, so the graph is not connected
-            }
-        }
-        return true;
+struct Node {
+    char city;
+    int cost;
+    Node(char c, int m = 0) {
+        city = c;
+        cost = m;
     }
 };
-int main() {
-    int V = 5; // Number of vertices (cities)
-    Graph g(V);
-    g.addEdge(0, 1, 10); // Flight path from city 0 to city 1 with weight 10
-    g.addEdge(0, 2, 15); // Flight path from city 0 to city 2 with weight 15
-    g.addEdge(1, 2, 5); // Flight path from city 1 to city 2 with weight 5
-    g.addEdge(2, 3, 7); // Flight path from city 2 to city 3 with weight 7
-    g.addEdge(3, 4, 3); // Flight path from city 3 to city 4 with weight 3
-    cout << "\n";
-    if (g.isConnected()) {
-        cout << "The graph is connected.\n";
-    } else {
-        cout << "The graph is not connected.\n";
+class Graph {
+private:
+    int V;
+    vector<list<Node> > adjlist;
+public:
+    vector<bool> visited;
+    Graph(int vertex) {
+        V = vertex;
+        adjlist.resize(V);
+        vector<bool> visited(V, false);
     }
+
+    int index(char ch) {
+        return int(ch) - 65;
+    }
+
+    void addedge(char start, Node& n) {
+        int s1 = index(start);
+        adjlist[s1].push_back(n);
+    }
+
+    void dfs(char start,vector <bool> &visited) {
+        stack<char> st;
+        int in1 = index(start);
+        st.push(start);
+        visited[in1] = true;
+        int it;
+        while (!st.empty()) {
+            char curr = st.top();
+            st.pop();
+            cout << curr << " ";
+            for (auto it = adjlist[index(curr)].begin(); it != adjlist[index(curr)].end(); ++it) {
+                char next_city = (*it).city;
+                int in2 = index(next_city);
+                if (visited[in2] == false) {
+                    st.push(next_city);
+                    visited[in2] = true;
+                }
+            }
+        }
+    }
+        
+    bool isConnected(vector <bool> &visited) {
+        // Check if all vertices are visited
+        for (bool v : visited) {
+            if (!v) {
+                cout<<"Not connected!!!!!!!!!!!"<<endl;
+                return false; // If any vertex is not visited, graph is disconnected
+            }
+        }
+        cout<<"Connected";
+        return true; // All vertices are visited, graph is connected
+    }
+
+};
+int main() {
+    int V;
+    cout<<"Enter number of vertices: ";
+    cin>>V;
+    vector<bool> visited(V,false);
+    Node n1('B', 500);
+    Node n2('C', 200);
+    Node n3('E', 180);
+    Node n4('A', 134);
+    Node n5('D', 899);
+    Graph g1(5);
+    g1.addedge('A', n1);
+    g1.addedge('B', n2);
+    g1.addedge('C', n3);
+    g1.addedge('D', n4);
+    g1.addedge('E', n5);
+    g1.dfs('B',visited);
+    g1.isConnected(visited);
     return 0;
 }
+
 
